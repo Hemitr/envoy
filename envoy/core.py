@@ -64,6 +64,7 @@ class Command(object):
         def target():
 
             try:
+                #这里，标准输入、标准输出和标准错误流都是字节流，所以后面要将data字节化。
                 self.process = subprocess.Popen(self.cmd,
                     universal_newlines=True,
                     shell=False,
@@ -176,8 +177,8 @@ def expand_args(command):
     """Parses command strings and returns a Popen-ready list."""
 
     # Prepare arguments.
-    if isinstance(command, (str, unicode)):
-        splitter = shlex.shlex(command.encode('utf-8'))
+    if isinstance(command, str):
+        splitter = shlex.shlex(command)
         splitter.whitespace = '|'
         splitter.whitespace_split = True
         command = []
@@ -201,7 +202,7 @@ def run(command, data=None, timeout=None, kill_timeout=None, env=None, cwd=None)
     """
 
     command = expand_args(command)
-
+    #history 是用来提供管道功能
     history = []
     for c in command:
 
@@ -234,7 +235,7 @@ def run(command, data=None, timeout=None, kill_timeout=None, env=None, cwd=None)
 
 def connect(command, data=None, env=None, cwd=None):
     """Spawns a new process from the given command."""
-
+    #超级有问题，这里面data又没有用
     # TODO: support piped commands
     command_str = expand_args(command).pop()
     environ = dict(os.environ)
@@ -252,3 +253,8 @@ def connect(command, data=None, env=None, cwd=None):
     )
 
     return ConnectedCommand(process=process)
+
+if __name__ == '__main__':
+    print(expand_args('ls -al | grep core'))
+    c = connect('ls -al | grep core')
+    print(c.std_out)
